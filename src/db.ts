@@ -1,0 +1,64 @@
+const mongoose = require("mongoose");
+
+mongoose.connect("mongodb://localhost:27017/UserData")
+.then(()=> {
+    console.log("Successfully connected")
+})
+.catch((err: any) => {
+    console.error("Didnot connected",err)
+})
+
+const userSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        maxLength: 20,
+        minLength:3,
+        trim: true,
+        unique: true,
+        required: true
+    },
+    
+    email:{
+        type:String,
+        required: true,
+        unique: true,
+        trim:true
+    },
+    password:{
+        type:String,
+        required: true,
+        minLength : 6,
+    }
+})
+
+
+const adminSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        maxLength: 20,
+        minLength:3,
+        trim: true,
+        unique: true,
+        required: true
+    },
+    
+    email:{
+        type:String,
+        required: true,
+        unique: true,
+        trim:true
+    },
+    password:{
+        type:String,
+        required: true,
+        minLength : 6,
+    }
+})
+
+const newUser = mongoose.model("User", userSchema);
+const Admin =  mongoose.model("Admin" , adminSchema);
+
+module.exports = {
+    newUser,
+    Admin
+}
