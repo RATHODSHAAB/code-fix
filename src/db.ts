@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 mongoose.connect("mongodb://localhost:27017/UserData")
 .then(()=> {
@@ -55,10 +55,10 @@ const adminSchema = new mongoose.Schema({
     }
 })
 
-const newUser = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema);
 const Admin =  mongoose.model("Admin" , adminSchema);
 
 module.exports = {
-    newUser,
+    User,
     Admin
 }

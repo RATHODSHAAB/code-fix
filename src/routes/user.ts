@@ -1,13 +1,13 @@
-const express  = require("express");
+import express ,  { Request, Response } from "express";
 
-const bcrypt   = require("bcrypt");
-const jwt      = require("jsonwebtoken");
-const dotenv   = require("dotenv");
-const { User } = require("../db");
-const { z }    = require("zod");
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import { User } from "../db";
+import { z } from "zod";
 
 dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 const router = express.Router();
 
@@ -33,7 +33,7 @@ router.post("/signup", async(req :Request, res:Response)=> {
         console.log(existingUser);
 
      if(existingUser) {
-        res.status(400).json({ error : "Username already taken" });
+        return   res.status(400).json({ error : "Username already taken" });
     }
 
     //continue logic: hasshed password, save user 
