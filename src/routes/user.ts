@@ -8,6 +8,7 @@ import { z } from "zod";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
+const SECRET_KEY = process.env.SECRET_KEY!;
 
 const router = express.Router();
 
@@ -16,6 +17,8 @@ const signupBody = z.object({
     username:z.string(),
     email: z.string().email(),
     password: z.string(),
+    role: z.string(),
+    secretKey: z.string().optional()
 })
 
 
@@ -26,23 +29,38 @@ router.post("/signup", async(req :Request, res:Response)=> {
         return res.status(400).json({ error : parsed.error })
     }
 
-    const { username, email, password} = parsed.data;//directly accesing the value pf these para by req
-
+    const { username, email, password , role , secretKey} = parsed.data;//directly accesing the value of these para by req
+    //Admin Validation
      try {
-        const existingUser =  await User.findOne({ username})
+        if(role=== 'admin') {
+            if(!secretKey || secretKey !== SECRET_KEY) {
+                return res.status(401).json({
+                    error : "Invalid or missing Secret key"
+                })
+            }
+        }
+
+
+        //checking if user existing or not?
+        const existingUser =  await User.findOne({
+            $or : [{username}, {email}]
+        })
         console.log(existingUser);
 
-     if(existingUser) {
-        return   res.status(400).json({ error : "Username already taken" });
+        if(existingUser) {
+          return  res.status(400).json({ error : "Username already taken" });
     }
 
     //continue logic: hasshed password, save user 
     const hashedPassword = await bcrypt.hash(password,10);
 
+
+    //Create User with role 
     const newUser = await User.create({
         username,
         email,
         password: hashedPassword,
+        role: role || 'user'  //Default to user if not specified 
     })
 
 
@@ -52,12 +70,32 @@ router.post("/signup", async(req :Request, res:Response)=> {
         {expiresIn: "1h"}
     );
 
-    res.status(200).json({
-      message: "User created successfully",
-      token,
-    });
+     if (role === 'admin') {
+            res.status(201).json({
+                message: "Admin account created successfully",
+                token,
+                user: {
+                    id: newUser._id,
+                    username: newUser.username,
+                    role: newUser.role
+                },
+                redirectTo: '/admin/create-event'
+            });
+        }
+        else {
+            res.status(201).json({
+                message: "User account creared suucessfully",
+                token,
+                user: {
+                    id: newUser._id,
+                    username: newUser.username,
+                    role: newUser.role
+                },
+                redirectTo: '/'
+            })
+        }
 } 
-     catch (error) {
+ catch (error) {
         console.error("error");
         res.status(500).json({ error : "Server error"})
      }

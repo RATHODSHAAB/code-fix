@@ -3,6 +3,7 @@ import userRoutes from "./user"; // ✅ ESModule import that matches the `export
 
 const router = express.Router();
 
+
 router.use("/user", userRoutes); // All user routes go under /api/users
 
 export default router;
