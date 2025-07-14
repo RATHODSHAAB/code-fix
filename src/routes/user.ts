@@ -29,11 +29,16 @@ router.post("/signup", async(req :Request, res:Response)=> {
         return res.status(400).json({ error : parsed.error })
     }
 
-    const { username, email, password , role , secretKey} = parsed.data;//directly accesing the value of these para by req
+    const { username, email, password , role , secretKey} = parsed.data; //directly accesing the value of these para by req
+    
+    
     //Admin Validation
      try {
         if(role=== 'admin') {
             if(!secretKey || secretKey !== SECRET_KEY) {
+                console.log(secretKey)
+                console.log(!secretKey || secretKey !== SECRET_KEY)
+                console.log(SECRET_KEY)
                 return res.status(401).json({
                     error : "Invalid or missing Secret key"
                 })
@@ -107,6 +112,45 @@ router.post("/signup", async(req :Request, res:Response)=> {
 const signinBody = z.object({
     username: z.string(),
     password: z.string(),
+    role: z.string()
+})
+
+router.post('/signin', async (req :Request, res:Response)=> {
+    const parsed = signinBody.safeParse(req.body);
+    console.log("Request Body", req.body)
+    if(!parsed.success){
+        return res.status(401).json({error: parsed.error})
+    }
+
+    const {username, password,   role } = parsed.data;
+
+
+    try {
+        const user = await User.findOne({ username });
+        if(!user) {
+           return  res.status(400).json({ error : "Invalid Credentials" });
+        }
+          const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: "Password credentials" });
+        }
+
+        const token = jwt.sign(
+            { userId: user._id, username: user.username, role: user.role },
+            JWT_SECRET,
+            { expiresIn: "24h" }
+        );
+
+        res.status(200).json({
+            message: "Login successful",
+            token,
+        });
+
+        
+    } catch (error) {
+        res.status(201).json({error: "Not found auny user"})
+    }
 })
 
 export default router;
