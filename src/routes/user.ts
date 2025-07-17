@@ -32,20 +32,7 @@ router.post("/signup", async(req :Request, res:Response)=> {
     const { username, email, password , role , secretKey} = parsed.data; //directly accesing the value of these para by req
     
     
-    //Admin Validation
      try {
-        if(role=== 'admin') {
-            if(!secretKey || secretKey !== SECRET_KEY) {
-                console.log(secretKey)
-                console.log(!secretKey || secretKey !== SECRET_KEY)
-                console.log(SECRET_KEY)
-                return res.status(401).json({
-                    error : "Invalid or missing Secret key"
-                })
-            }
-        }
-
-
         //checking if user existing or not?
         const existingUser =  await User.findOne({
             $or : [{username}, {email}]
@@ -75,19 +62,7 @@ router.post("/signup", async(req :Request, res:Response)=> {
         {expiresIn: "1h"}
     );
 
-     if (role === 'admin') {
-            res.status(201).json({
-                message: "Admin account created successfully",
-                token,
-                user: {
-                    id: newUser._id,
-                    username: newUser.username,
-                    role: newUser.role
-                },
-                redirectTo: '/admin/create-event'
-            });
-        }
-        else {
+     if (role === 'user') {
             res.status(201).json({
                 message: "User account creared suucessfully",
                 token,
@@ -123,6 +98,7 @@ router.post('/signin', async (req :Request, res:Response)=> {
     }
 
     const {username, password,   role } = parsed.data;
+    
 
 
     try {

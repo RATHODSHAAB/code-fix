@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { required } from "zod/v4/core/util.cjs";
 
 mongoose.connect("mongodb://localhost:27017/UserData")
 .then(()=> {
@@ -60,11 +61,19 @@ const adminSchema = new mongoose.Schema({
         type:String,
         required: true,
         minLength : 6,
+    },
+    role:{
+        type:String,
+        required:true,
+        trim: true,
     }
 })
 
+
+
+
 export const User = mongoose.model("User", userSchema);
-const Admin =  mongoose.model("Admin" , adminSchema);
+export const Admin =  mongoose.model("Admin" , adminSchema);
 
 module.exports = {
     User,
